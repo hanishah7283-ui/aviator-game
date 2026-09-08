@@ -1,1 +1,81 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🚀 Aviator Premium</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{background:#0a0a1a;display:flex;justify-content:center;align-items:center;min-height:100vh;font-family:sans-serif}
+        .card{background:rgba(20,20,50,0.6);backdrop-filter:blur(20px);border-radius:30px;padding:25px;width:420px;max-width:95vw;border:1px solid rgba(255,255,255,0.05)}
+        .logo{font-size:24px;font-weight:800;background:linear-gradient(135deg,#ffd700,#ff6ec7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-align:center}
+        .balance{text-align:center;color:#aab;font-size:14px;margin:6px 0}
+        .balance strong{color:#fff;font-size:20px}
+        canvas{width:100%;height:auto;aspect-ratio:400/280;background:rgba(0,0,0,0.3);border-radius:14px;margin:8px 0}
+        .mult{text-align:center;font-size:48px;font-weight:900;background:linear-gradient(135deg,#ffd700,#ff8c00);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .btn-group{display:flex;gap:10px;margin:10px 0}
+        .btn{flex:1;padding:14px;border:none;border-radius:14px;font-weight:700;font-size:15px;cursor:pointer}
+        .btn-bet{background:#00c896;color:#fff}
+        .btn-cash{background:#ff416c;color:#fff}
+        .btn-cash:disabled{opacity:0.25}
+        .btn-auto{background:#7c3aed;color:#fff}
+        .btn-auto.active{background:#ef4444}
+        .settings{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0}
+        .settings input{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:8px 12px;color:#fff;width:80px;font-size:14px}
+        .settings label{color:rgba(255,255,255,0.3);font-size:12px;display:flex;align-items:center;gap:4px}
+        .footer{display:flex;justify-content:space-between;margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.04);font-size:12px;color:rgba(255,255,255,0.2)}
+        .dots{display:flex;gap:5px}
+        .dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.05)}
+        .dot.green{background:#00c896}
+        .dot.red{background:#ff416c}
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="logo">🚀 Aviator Premium</div>
+        <div class="balance">💰 Balance: <strong id="bal">100.00</strong></div>
+        <canvas id="c" width="400" height="280"></canvas>
+        <div class="mult" id="mult">1.00x</div>
+        <div class="btn-group">
+            <button class="btn btn-bet" id="betBtn">🎯 BET</button>
+            <button class="btn btn-cash" id="cashBtn" disabled>💎 CASH</button>
+            <button class="btn btn-auto" id="autoBtn">🤖 AUTO</button>
+        </div>
+        <div class="settings">
+            <label>Bet: <input type="number" id="betInput" value="10" min="1"></label>
+            <label>Auto Cash: <input type="number" id="autoInput" value="2.00" step="0.1"></label>
+        </div>
+        <div class="footer">
+            <span>Profit: <strong id="profit" style="color:#00c896;">$0.00</strong></span>
+            <div class="dots" id="dots"><span style="color:rgba(255,255,255,0.15);font-size:10px;">history</span></div>
+        </div>
+    </div>
+    <script>
+        const canvas=document.getElementById('c'),ctx=canvas.getContext('2d'),multDisplay=document.getElementById('mult'),balanceDisplay=document.getElementById('bal'),profitDisplay=document.getElementById('profit'),betInput=document.getElementById('betInput'),autoInput=document.getElementById('autoInput'),betBtn=document.getElementById('betBtn'),cashBtn=document.getElementById('cashBtn'),autoBtn=document.getElementById('autoBtn'),dots=document.getElementById('dots');
+        let balance=100,bet=10,autoTarget=2,mult=1,gameActive=!1,crashed=!1,crashPoint=1,animId=null,start=0,history=[],autoMode=!1,timeout=null,profit=0;
+
+        function getCrash(){return Math.max(1.01,1/(1-Math.random()*0.99))}
+
+        function draw(){const w=400,h=280;ctx.clearRect(0,0,w,h);ctx.strokeStyle='rgba(255,255,255,0.03)';ctx.lineWidth=1;for(let i=0;i<=10;i++){ctx.beginPath();ctx.moveTo(i*40,0);ctx.lineTo(i*40,h);ctx.stroke();ctx.beginPath();ctx.moveTo(0,i*28);ctx.lineTo(w,i*28);ctx.stroke()}if(gameActive||crashed){const maxD=Math.min(mult,12),x=Math.min((mult/crashPoint)*380,380),y=h-20-(maxD/12)*230;const grad=ctx.createLinearGradient(0,0,w,0);if(crashed){grad.addColorStop(0,'#ff4466');grad.addColorStop(1,'#cc0033')}else{grad.addColorStop(0,'#00ffaa');grad.addColorStop(1,'#00ccff')}ctx.shadowColor=crashed?'#ff446688':'#00ffaa66';ctx.shadowBlur=20;ctx.strokeStyle=grad;ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(0,h-20);ctx.lineTo(x,y);ctx.stroke();ctx.shadowBlur=0;const dg=ctx.createRadialGradient(x,y,2,x,y,16);if(crashed){dg.addColorStop(0,'#ff4466');dg.addColorStop(1,'rgba(255,68,102,0)')}else{dg.addColorStop(0,'#00ffaa');dg.addColorStop(1,'rgba(0,255,170,0)')}ctx.fillStyle=dg;ctx.beginPath();ctx.arc(x,y,16,0,Math.PI*2);ctx.fill();ctx.fillStyle=crashed?'#ff4466':'#00ffaa';ctx.shadowBlur=30;ctx.shadowColor=crashed?'#ff4466':'#00ffaa';ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0}if(crashed){ctx.fillStyle='rgba(255,68,102,0.1)';ctx.font='bold 44px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('⛔ CRASHED',w/2,h/2-10)}}
+
+        function update(){if(!gameActive)return;const elapsed=(Date.now()-start)/1000;mult=1+elapsed*0.55;if(mult>=crashPoint){mult=crashPoint;crash();return}multDisplay.textContent=mult.toFixed(2)+'x';draw();if(autoMode&&mult>=autoTarget){cashOut();return}animId=requestAnimationFrame(update)}
+
+        function crash(){gameActive=!1;crashed=!0;cashBtn.disabled=!0;betBtn.disabled=!1;multDisplay.style.background='linear-gradient(135deg,#ff4466,#cc0033)';multDisplay.style.webkitBackgroundClip='text';draw();history.unshift(!1);if(history.length>8)history.pop();updateDots();if(animId)cancelAnimationFrame(animId);animId=null;if(autoMode){timeout=setTimeout(()=>{if(!gameActive&&balance>=bet)start()},1200)}}
+
+        function cashOut(){if(!gameActive)return;const win=Math.round((bet*mult)*100)/100;balance+=win;profit+=(win-bet);balanceDisplay.textContent=balance.toFixed(2);profitDisplay.textContent=(profit>0?'+':'')+profit.toFixed(2);profitDisplay.style.color=profit>=0?'#00c896':'#ff416c';history.unshift(!0);if(history.length>8)history.pop();updateDots();gameActive=!1;cashBtn.disabled=!0;betBtn.disabled=!1;if(animId)cancelAnimationFrame(animId);animId=null;draw();if(autoMode){timeout=setTimeout(()=>{if(!gameActive&&balance>=bet)start()},800)}}
+
+        function start(){bet=parseFloat(betInput.value)||10;if(balance<bet){alert('Insufficient balance!');if(autoMode)toggleAuto();return}balance-=bet;balanceDisplay.textContent=balance.toFixed(2);gameActive=!0;crashed=!1;mult=1;autoTarget=parseFloat(autoInput.value)||2;multDisplay.style.background='linear-gradient(135deg,#ffd700,#ff8c00)';multDisplay.style.webkitBackgroundClip='text';multDisplay.textContent='1.00x';betBtn.disabled=!0;cashBtn.disabled=!1;start=Date.now();draw();if(animId)cancelAnimationFrame(animId);animId=requestAnimationFrame(update)}
+
+        function toggleAuto(){autoMode=!autoMode;autoBtn.classList.toggle('active');autoBtn.textContent=autoMode?'⏹ STOP':'🤖 AUTO';if(autoMode&&!gameActive&&balance>=bet){if(timeout)clearTimeout(timeout);start()}if(!autoMode){if(timeout)clearTimeout(timeout);timeout=null}}
+
+        function updateDots(){let html='';for(let i=0;i<history.length;i++){html+=`<div class="dot ${history[i]?'green':'red'}"></div>`}if(history.length===0){html='<span style="color:rgba(255,255,255,0.15);font-size:10px;">history</span>'}dots.innerHTML=html}
+
+        betBtn.addEventListener('click',()=>{if(autoMode)toggleAuto();start()});
+        cashBtn.addEventListener('click',cashOut);
+        autoBtn.addEventListener('click',toggleAuto);
+        document.addEventListener('keydown',(e)=>{if(e.key==='Enter'&&!gameActive&&!betBtn.disabled){if(autoMode)toggleAuto();start()}if(e.key===' '&&gameActive&&!cashBtn.disabled){e.preventDefault();cashOut()}if(e.key==='a'||e.key==='A'){toggleAuto()}});
+        draw();updateDots();console.log('🚀 Aviator loaded!');console.log('🎮 ENTER=Bet, SPACE=Cash, A=Auto');
+    </script>
+</body>
+</html>
