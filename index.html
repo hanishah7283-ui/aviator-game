@@ -24,10 +24,43 @@
         .banner .prize { background: #ff9100; color: #000; padding: 2px 10px; border-radius: 30px; font-weight: 800; font-size: 12px; }
         .canvas-wrap { background: #0b101f; border-radius: 16px; overflow: hidden; border: 1px solid #1f2d45; margin-bottom: 12px; position: relative; }
         #gameCanvas { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; background: #0b101f; touch-action: none; }
-        .multiplier-box { text-align: center; margin: 4px 0 8px; }
+        .multiplier-box { text-align: center; margin: 4px 0 8px; display: flex; justify-content: center; align-items: center; gap: 20px; }
         #multiplierDisplay { font-size: 38px; font-weight: 800; color: #fff; transition: 0.2s; }
         #multiplierDisplay.crashed { color: #ff1744; }
-        .live-feed { background: #0d111f; border-radius: 12px; padding: 6px 10px; margin-bottom: 12px; border: 1px solid #1f2937; max-height: 56px; overflow-y: auto; scrollbar-width: thin; }
+        #timerDisplay { font-size: 36px; font-weight: 800; color: #ffd54f; background: #0d111f; padding: 0 16px; border-radius: 40px; min-width: 70px; text-align: center; border: 2px solid #2a3a5a; }
+        
+        /* ---------- PLAYERS LIST (20 USERS) ---------- */
+        .players-section {
+            background: #0d111f;
+            border-radius: 12px;
+            padding: 4px 6px;
+            margin-bottom: 12px;
+            border: 1px solid #1f2937;
+            max-height: 140px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+        }
+        .players-section::-webkit-scrollbar { width: 4px; }
+        .players-section::-webkit-scrollbar-thumb { background: #2a3a5a; border-radius: 10px; }
+        .player-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 2px 6px;
+            font-size: 11px;
+            color: #8ea4c4;
+            border-bottom: 1px solid #1a2332;
+            align-items: center;
+        }
+        .player-row .pname { font-weight: 600; color: #b0c4de; }
+        .player-row .pbet { color: #ffd54f; font-weight: 600; }
+        .player-row .pstatus { font-weight: 700; font-size: 10px; }
+        .player-row .pstatus.green { color: #00e676; }
+        .player-row .pstatus.red { color: #ff1744; }
+        .player-row .pstatus.gold { color: #ffd54f; }
+        .player-row .pstatus.wait { color: #6b7b9c; }
+
+        /* Existing styles continue... */
+        .live-feed { background: #0d111f; border-radius: 12px; padding: 6px 10px; margin-bottom: 12px; border: 1px solid #1f2937; max-height: 48px; overflow-y: auto; scrollbar-width: thin; }
         .live-feed::-webkit-scrollbar { width: 3px; }
         .live-feed::-webkit-scrollbar-thumb { background: #2a3a5a; border-radius: 10px; }
         .live-item { font-size: 12px; color: #b0c4de; padding: 2px 0; border-bottom: 1px solid #1a2332; display: flex; justify-content: space-between; }
@@ -70,7 +103,7 @@
         .float-right { position: absolute; right: 16px; bottom: 120px; display: flex; flex-direction: column; gap: 6px; z-index: 10; }
         .float-btn { background: #1a2332; border: 1px solid #2a3a5a; border-radius: 30px; padding: 4px 12px; color: #b0c4de; font-size: 11px; font-weight: 700; cursor: pointer; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.6); }
         .float-btn.green { background: #00e676; color: #000; border-color: #00e676; }
-        @media (max-width: 400px) { .preset-btn { font-size: 14px; padding: 8px 0; } .auto-section input[type="number"] { width: 60px; } .bottom-content { max-height: 100px; } }
+        @media (max-width: 400px) { .preset-btn { font-size: 14px; padding: 8px 0; } .auto-section input[type="number"] { width: 60px; } .bottom-content { max-height: 100px; } .player-row { font-size: 10px; } }
     </style>
 </head>
 <body>
@@ -78,99 +111,203 @@
     <div class="header"><div class="brand">Hani<span>Aviator</span></div><div class="balance-box">💰 Balance: <span id="balanceDisplay">100.00</span> PKR</div></div>
     <div class="history-scroll" id="historyScroll"></div>
     <div class="banner"><div><h3>✈️ HANI Aviator</h3><p>DAILY 1,000,000 LEADERBOARD PRIZE</p></div><div class="prize">🏆 1M</div></div>
-    <div class="multiplier-box"><div id="multiplierDisplay">1.00x</div></div>
+    <div class="multiplier-box">
+        <div id="multiplierDisplay">1.00x</div>
+        <div id="timerDisplay">10</div>
+    </div>
     <div class="canvas-wrap"><canvas id="gameCanvas" width="400" height="225"></canvas></div>
+    
+    <!-- SMALL LIVE FEED (EVENT LOG) -->
     <div class="live-feed" id="liveFeed"><div class="live-item" style="color:#4a6fa5; justify-content:center;">Waiting for players...</div></div>
+    
+    <!-- NEW: 20 PLAYERS LIST -->
+    <div class="players-section" id="playersGrid"></div>
+
     <div class="tabs"><button class="tab active" id="betTab">Bet</button><button class="tab" id="autoTab">Auto</button></div>
     <div class="preset-grid" id="presetGrid"><button class="preset-btn active" data-amount="10">10 <small>PKR</small></button><button class="preset-btn" data-amount="100">100 <small>PKR</small></button><button class="preset-btn" data-amount="200">200 <small>PKR</small></button><button class="preset-btn" data-amount="500">500 <small>PKR</small></button><button class="preset-btn" data-amount="1000">1,000 <small>PKR</small></button></div>
     <div class="auto-section" id="autoSection"><label class="toggle-label"><input type="checkbox" id="autoBetToggle"> Auto Bet</label><input type="number" id="autoCashInput" value="1.25" step="0.05" min="1.00"><label style="color:#8ea4c4; font-size:12px;">Auto Cash Out</label></div>
-    <div class="action-row"><button id="betBtn">🚀 Bet</button><button id="cashBtn">💰 Cash Out</button></div>
-    <div id="message" class="msg">Place your bet & fly!</div>
+    <div class="action-row"><button id="betBtn">🚀 Place Bet</button><button id="cashBtn">💰 Cash Out</button></div>
+    <div id="message" class="msg">Place your bet before timer ends!</div>
     <div class="bottom-nav"><div class="nav-item active" data-view="all"><span>📊</span> All bets</div><div class="nav-item" data-view="my"><span>📋</span> My bets</div><div class="nav-item" data-view="ranks"><span>🏅</span> Ranks</div><div class="nav-item" data-view="leaderboard"><span>👑</span> Leaderboard</div></div>
     <div class="bottom-content" id="bottomContent"><div class="empty-msg">Select a tab to view</div></div>
     <div class="float-right"><div class="float-btn green" id="dailyBtn">🔥 Daily1M</div><div class="float-btn" id="recordsBtn">📁 Records</div></div>
 </div>
 <script>
-    (function(){
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        const multiplierDisplay = document.getElementById('multiplierDisplay');
-        const balanceDisplay = document.getElementById('balanceDisplay');
-        const betBtn = document.getElementById('betBtn');
-        const cashBtn = document.getElementById('cashBtn');
-        const msg = document.getElementById('message');
-        const historyScroll = document.getElementById('historyScroll');
-        const presetBtns = document.querySelectorAll('.preset-btn');
-        const betTab = document.getElementById('betTab');
-        const autoTab = document.getElementById('autoTab');
-        const autoSection = document.getElementById('autoSection');
-        const autoBetToggle = document.getElementById('autoBetToggle');
-        const autoCashInput = document.getElementById('autoCashInput');
-        const bottomNav = document.querySelectorAll('.nav-item');
-        const bottomContent = document.getElementById('bottomContent');
-        const liveFeed = document.getElementById('liveFeed');
+(function(){
+    // ---------- DOM REFS ----------
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const multiplierDisplay = document.getElementById('multiplierDisplay');
+    const timerDisplay = document.getElementById('timerDisplay');
+    const balanceDisplay = document.getElementById('balanceDisplay');
+    const betBtn = document.getElementById('betBtn');
+    const cashBtn = document.getElementById('cashBtn');
+    const msg = document.getElementById('message');
+    const historyScroll = document.getElementById('historyScroll');
+    const presetBtns = document.querySelectorAll('.preset-btn');
+    const betTab = document.getElementById('betTab');
+    const autoTab = document.getElementById('autoTab');
+    const autoSection = document.getElementById('autoSection');
+    const autoBetToggle = document.getElementById('autoBetToggle');
+    const autoCashInput = document.getElementById('autoCashInput');
+    const bottomNav = document.querySelectorAll('.nav-item');
+    const bottomContent = document.getElementById('bottomContent');
+    const liveFeed = document.getElementById('liveFeed');
+    const playersGrid = document.getElementById('playersGrid');
 
-        let balance = 100.00;
-        let currentBet = 10;
-        let isPlaying = false;
-        let isCrashed = false;
-        let currentMultiplier = 1.00;
-        let crashPoint = 0;
-        let history = [];
-        let myBetHistory = [];
-        let animId = null;
-        let startTime = 0;
-        let points = [];
-        let selectedAmount = 10;
-        const fakeNames = ['Ali_84', 'Khan_Sahab', 'Zara_007', 'Raja_G', 'Jutt_Boy', 'Sara_K', 'Waqas_Pro', 'Nimra_22', 'Shah_123', 'Ayesha_99', 'Hassan_45', 'Fatima_77'];
+    // ---------- AUDIO ----------
+    let audioCtx = null;
+    function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+    function playBeep(freq, dur, vol = 0.3, type = 'sine') { try { initAudio(); const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.type = type; o.frequency.value = freq; g.gain.setValueAtTime(vol, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur); o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + dur); } catch(e) {} }
+    function soundTick() { playBeep(800, 0.1, 0.2); }
+    function soundTakeoff() { playBeep(600, 0.5, 0.3, 'square'); setTimeout(()=> playBeep(1000, 0.3, 0.3, 'square'), 200); }
+    function soundCashout() { playBeep(1200, 0.2, 0.3); setTimeout(()=> playBeep(1500, 0.3, 0.3), 200); }
+    function soundCrash() { playBeep(200, 0.8, 0.4, 'sawtooth'); }
 
-        function updateBalanceUI() { balanceDisplay.textContent = balance.toFixed(2); }
-        function updateHistoryUI() {
-            historyScroll.innerHTML = '';
-            const toShow = history.slice(-10);
-            if (toShow.length === 0) { const div = document.createElement('div'); div.className = 'chip'; div.textContent = 'No history'; div.style.color = '#4a6fa5'; historyScroll.appendChild(div); return; }
-            for (let item of toShow) { const div = document.createElement('div'); div.className = 'chip'; if (item.win) { div.classList.add('green'); div.textContent = '✅ ' + item.mult.toFixed(2) + 'x'; } else { div.classList.add('red'); div.textContent = '💥 ' + item.mult.toFixed(2) + 'x'; } historyScroll.appendChild(div); }
+    // ---------- STATE ----------
+    let balance = 100.00;
+    let currentBet = 10;
+    let isPlaying = false;
+    let isCrashed = false;
+    let currentMultiplier = 1.00;
+    let crashPoint = 0;
+    let history = [];
+    let myBetHistory = [];
+    let animId = null;
+    let startTime = 0;
+    let points = [];
+    let selectedAmount = 10;
+    let betPlaced = false;
+    let countdown = 10;
+    let countdownInterval = null;
+    let roundActive = false;
+
+    // ---------- 20 PLAYERS DATA ----------
+    let players = [];
+    const namePool = ['Ali_84','Khan_Sahab','Zara_007','Raja_G','Jutt_Boy','Sara_K','Waqas_Pro','Nimra_22','Shah_123','Ayesha_99','Hassan_45','Fatima_77','Bilal_King','Hina_Queen','Usman_Pro','Sana_Dev','Fahad_X','Iqra_Star','Danish_YT','Sadia_12','Hamza_01','Areeba_22','Salman_45','Mahnoor_8','Omer_9','Nida_7','Zain_5','Hira_3'];
+
+    function shuffleArray(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
         }
+        return arr;
+    }
 
-        function addLiveEvent(name, action, mult, amount) {
-            const item = document.createElement('div'); item.className = 'live-item';
-            if (action === 'cashed') { item.innerHTML = `<span>${name}</span><span>Bet ${amount} PKR → <span class="highlight">${mult.toFixed(2)}x</span> 💰</span>`; } 
-            else { item.innerHTML = `<span>${name}</span><span>Bet ${amount} PKR → <span class="crash">💥 ${mult.toFixed(2)}x</span></span>`; }
-            liveFeed.appendChild(item); if (liveFeed.children.length > 15) { liveFeed.removeChild(liveFeed.firstChild); } liveFeed.scrollTop = liveFeed.scrollHeight;
-        }
-        function generateFakeEvent() { if (isPlaying) return; const name = fakeNames[Math.floor(Math.random() * fakeNames.length)]; const bet = Math.floor(Math.random() * 500) + 10; const mult = (Math.random() * 8 + 1.1); const win = Math.random() > 0.45; if (win) addLiveEvent(name, 'cashed', mult, bet); else addLiveEvent(name, 'crashed', mult, bet); }
-        setInterval(generateFakeEvent, 2500);
+    function generatePlayers() {
+        const shuffled = shuffleArray([...namePool]);
+        // Take first 20 (or more if pool allows, we have 28 so we take 20)
+        const selectedNames = shuffled.slice(0, 20);
+        players = selectedNames.map((name) => {
+            // Random bet from 10 to 1000, step 10
+            const bet = Math.floor(Math.random() * 100) * 10 + 10;
+            if (bet > 1000) bet = 1000;
+            const target = (Math.random() * 8 + 1.1);
+            return {
+                name: name,
+                bet: bet,
+                targetMult: target,
+                status: '⏳ Waiting', // '⏳ Waiting', '🛫 Flying', '✅ Cashed', '💥 Crashed'
+                cashed: false
+            };
+        });
+        renderPlayers();
+    }
 
-        // ---------- ✅ FIXED DRAW FUNCTION (Plane ab chamke ga) ----------
-        function drawGraph() {
-            const w = 400, h = 225;
-            ctx.clearRect(0, 0, w, h);
-            ctx.strokeStyle = '#1a2744'; ctx.lineWidth = 0.5;
-            for (let i = 0; i < 10; i++) { const x = (i / 10) * w; ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); const y = (i / 10) * h; ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
-            if (points.length < 2) { ctx.strokeStyle = '#4a6fa5'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, h); ctx.lineTo(10, h - 10); ctx.stroke(); ctx.font = 'bold 14px Arial'; ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.fillText('✈️ HANI', 10, 10); return; }
-            ctx.strokeStyle = isCrashed ? '#ff1744' : '#00e676'; ctx.lineWidth = 3.5; ctx.shadowColor = isCrashed ? '#ff174466' : '#00e67666'; ctx.shadowBlur = 15; ctx.beginPath();
-            for (let i = 0; i < points.length; i++) { const x = (i / (points.length - 1)) * w; const y = h - (points[i] / 12) * h * 0.85; if (i === 0) ctx.moveTo(x, Math.min(y, h)); else ctx.lineTo(x, Math.min(y, h)); }
-            ctx.stroke(); ctx.shadowBlur = 0;
+    function renderPlayers() {
+        if (!playersGrid) return;
+        playersGrid.innerHTML = '';
+        players.forEach((p, index) => {
+            const row = document.createElement('div');
+            row.className = 'player-row';
+            // Status class
+            let statusClass = 'wait';
+            let statusText = p.status;
+            if (p.status.includes('✅')) { statusClass = 'green'; }
+            else if (p.status.includes('💥')) { statusClass = 'red'; }
+            else if (p.status.includes('🛫')) { statusClass = 'gold'; }
+            
+            row.innerHTML = `
+                <span class="pname">${index+1}. ${p.name}</span>
+                <span class="pbet">${p.bet} PKR</span>
+                <span class="pstatus ${statusClass}">${statusText}</span>
+            `;
+            playersGrid.appendChild(row);
+        });
+    }
 
-            // ---------- ✈️ PLANE (AB SAHI DIKHEGA) ----------
-            if (points.length > 0 && !isCrashed) {
-                const last = points[points.length - 1];
-                const x = w - 25;
-                const y = h - (last / 12) * h * 0.85;
-                ctx.font = '42px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif';
-                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-                ctx.shadowColor = '#00e676'; ctx.shadowBlur = 40;
-                ctx.fillStyle = '#ffffff'; // 🔥 WHITE color (ab dikhe ga)
-                ctx.fillText('✈️', x, Math.min(Math.max(y, 20), h - 20));
-                ctx.shadowBlur = 0;
+    function updatePlayerStatuses(mult) {
+        let changed = false;
+        players.forEach(p => {
+            if (p.cashed) return;
+            if (mult >= p.targetMult) {
+                p.cashed = true;
+                p.status = `✅ ${p.targetMult.toFixed(2)}x`;
+                changed = true;
+            } else {
+                if (p.status === '⏳ Waiting' || p.status === '🛫 Flying') {
+                    p.status = '🛫 Flying';
+                    changed = true;
+                }
             }
-            ctx.font = 'bold 14px Arial'; ctx.fillStyle = 'rgba(255,255,255,0.18)'; ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.fillText('✈️ HANI', 10, 10);
+        });
+        if (changed) renderPlayers();
+    }
+
+    function crashAllPlayers() {
+        let changed = false;
+        players.forEach(p => {
+            if (!p.cashed) {
+                p.status = `💥 ${p.targetMult.toFixed(2)}x`;
+                p.cashed = true;
+                changed = true;
+            }
+        });
+        if (changed) renderPlayers();
+    }
+
+    // ---------- UI HELPERS ----------
+    function updateBalanceUI() { balanceDisplay.textContent = balance.toFixed(2); }
+    function updateTimerDisplay(val) { timerDisplay.textContent = val; }
+
+    function updateHistoryUI() {
+        historyScroll.innerHTML = '';
+        const toShow = history.slice(-10);
+        if (toShow.length === 0) { const d = document.createElement('div'); d.className = 'chip'; d.textContent = 'No history'; d.style.color='#4a6fa5'; historyScroll.appendChild(d); return; }
+        for (let item of toShow) {
+            const d = document.createElement('div'); d.className = 'chip';
+            if (item.win) { d.classList.add('green'); d.textContent = '✅ '+item.mult.toFixed(2)+'x'; } else { d.classList.add('red'); d.textContent = '💥 '+item.mult.toFixed(2)+'x'; }
+            historyScroll.appendChild(d);
         }
+    }
 
-        function generateCrashPoint() { const r = Math.random(); if (r < 0.5) return 1.10 + Math.random() * 1.5; if (r < 0.75) return 2.60 + Math.random() * 2.0; if (r < 0.9) return 4.60 + Math.random() * 3.0; return 7.60 + Math.random() * 2.4; }
-        function resetRound(showHistory = true) { if (animId) { cancelAnimationFrame(animId); animId = null; } isPlaying = false; isCrashed = false; currentMultiplier = 1.00; points = []; startTime = 0; multiplierDisplay.textContent = '1.00x'; multiplierDisplay.classList.remove('crashed'); betBtn.disabled = false; betBtn.textContent = '🚀 Bet'; cashBtn.classList.remove('show'); cashBtn.disabled = true; document.querySelectorAll('.preset-btn').forEach(b => b.disabled = false); if (showHistory) drawGraph(); msg.textContent = 'Place your bet & fly!'; renderBottomView(document.querySelector('.nav-item.active')?.dataset.view || 'all'); }
-        function gameLoop(timestamp) { if (!startTime) startTime = timestamp; const elapsed = (timestamp - startTime) / 1000; let mult = 1.00 + elapsed * 0.28; if (mult > 15) mult = 15; if (mult >= crashPoint) { isCrashed = true; isPlaying = false; currentMultiplier = crashPoint; multiplierDisplay.textContent = crashPoint.toFixed(2) + 'x'; multiplierDisplay.classList.add('crashed'); cashBtn.classList.remove('show'); cashBtn.disabled = true; betBtn.disabled = false; betBtn.textContent = '🚀 Bet'; document.querySelectorAll('.preset-btn').forEach(b => b.disabled = false); const lost = currentBet; msg.textContent = '💥 Crashed at ' + crashPoint.toFixed(2) + 'x! Lost ₹' + lost.toFixed(2); history.push({ mult: crashPoint, win: false }); myBetHistory.push({ type: 'crash', amount: lost, mult: crashPoint, win: false }); if (history.length > 20) history.shift(); if (myBetHistory.length > 30) myBetHistory.shift(); updateHistoryUI(); drawGraph(); if (animId) { cancelAnimationFrame(animId); animId = null; } renderBottomView(document.querySelector('.nav-item.active')?.dataset.view || 'all'); setTimeout(() => { resetRound(true); }, 2500); return; } currentMultiplier = mult; points.push(mult); if (points.length > 150) points.shift(); multiplierDisplay.textContent = mult.toFixed(2) + 'x'; multiplierDisplay.classList.remove('crashed'); if (isPlaying && !isCrashed) { const winAmount = currentBet * mult; cashBtn.textContent = '💰 Cash ' + winAmount.toFixed(2); cashBtn.classList.add('show'); cashBtn.disabled = false; if (autoBetToggle.checked) { const autoTarget = parseFloat(autoCashInput.value); if (mult >= autoTarget) { cashOut(); return; } } } drawGraph(); animId = requestAnimationFrame(gameLoop); }
-        function startBet() { if (isPlaying) return; const betVal = selectedAmount; if (betVal > balance) { msg.textContent = '❌ Insufficient balance!'; return; } balance -= betVal; updateBalanceUI(); currentBet = betVal; points = []; isPlaying = true; isCrashed = false; currentMultiplier = 1.00; multiplierDisplay.classList.remove('crashed'); betBtn.disabled = true; betBtn.textContent = '⏳ Flying...'; document.querySelectorAll('.preset-btn').forEach(b => b.disabled = true); cashBtn.classList.add('show'); cashBtn.disabled = false; cashBtn.textContent = '💰 Cash 0.00'; msg.textContent = '✈️ Flying...'; crashPoint = generateCrashPoint(); startTime = 0; if (animId) cancelAnimationFrame(animId); animId = requestAnimationFrame(gameLoop); myBetHistory.push({ type: 'bet', amount: betVal, mult: 0, win: null }); if (myBetHistory.length > 30) myBetHistory.shift(); renderBottomView(document.querySelector('.nav-item.active')?.dataset.view || 'all'); }
-        function cashOut() { if (!isPlaying || isCrashed) return; const winAmount = currentBet * currentMultiplier; balance += winAmount; updateBalanceUI(); history.push({ mult: currentMultiplier, win: true }); myBetHistory.push({ type: 'cashout', amount: winAmount, mult: currentMultiplier, win: true }); if (history.length > 20) history.shift(); if (myBetHistory.length > 30) myBetHistory.shift(); updateHistoryUI(); msg.textContent = '🎉 Cashed out at ' + currentMultiplier.toFixed(2) + 'x! Won ₹' + winAmount.toFixed(2); isPlaying = false; cashBtn.classList.remove('show'); cashBtn.disabled = true; betBtn.disabled = false; betBtn.textContent = '🚀 Bet'; document.querySelectorAll('.preset-btn').forEach(b => b.disabled = false); if (animId) { cancelAnimationFrame(animId); animId = null; } drawGraph(); renderBottomView(document.querySelector('.nav-item.active')?.dataset.view || 'all'); setTimeout(() => { resetRound(true); }, 2000); }
+    // Live feed (small log)
+    function addLiveEvent(name, action, mult, amount) {
+        const item = document.createElement('div'); item.className = 'live-item';
+        if (action === 'cashed') { item.innerHTML = `<span>${name}</span><span>Bet ${amount} PKR → <span class="highlight">${mult.toFixed(2)}x</span> 💰</span>`; } 
+        else { item.innerHTML = `<span>${name}</span><span>Bet ${amount} PKR → <span class="crash">💥 ${mult.toFixed(2)}x</span></span>`; }
+        liveFeed.appendChild(item); if (liveFeed.children.length > 15) liveFeed.removeChild(liveFeed.firstChild);
+        liveFeed.scrollTop = liveFeed.scrollHeight;
+    }
+    function generateFakeEvent() {
+        if (isPlaying || roundActive) return;
+        const name = namePool[Math.floor(Math.random()*namePool.length)];
+        const bet = Math.floor(Math.random()*500)+10;
+        const mult = (Math.random()*8+1.1);
+        const win = Math.random() > 0.45;
+        if (win) addLiveEvent(name,'cashed',mult,bet); else addLiveEvent(name,'crashed',mult,bet);
+    }
+    setInterval(generateFakeEvent, 4000);
 
-        function renderBottomV
+    // ---------- DRAW GRAPH ----------
+    function drawGraph() {
+        const w = 400, h = 225;
+        ctx.clearRect(0, 0, w, h);
+        ctx.strokeStyle = '#1a2744'; ctx.lineWidth = 0.5;
+        for (let i = 0; i < 10; i++) {
+            const x = (i/10)*w; ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke();
+            const y = (i/10)*h; ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke();
+        }
+        if (points.length < 2) {
+            ctx.strokeStyle = '#4a6fa5'; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(0,h); ctx.lineTo(10,h-10); ctx.str
