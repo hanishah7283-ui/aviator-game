@@ -1,9 +1,9 @@
-   <!DOCTYPE html>
+       <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Uono Aviator</title>
+    <title>Hani Aviator</title>
     <style>
         * {
             margin: 0;
@@ -31,7 +31,7 @@
             position: relative;
         }
 
-        /* ----- TOP HEADER ----- */
+        /* HEADER */
         .header {
             display: flex;
             justify-content: space-between;
@@ -60,7 +60,7 @@
             font-size: 15px;
         }
 
-        /* ----- HISTORY CHIPS ----- */
+        /* HISTORY CHIPS */
         .history-scroll {
             display: flex;
             gap: 6px;
@@ -90,7 +90,7 @@
             color: #ffcdd2;
         }
 
-        /* ----- BANNER ----- */
+        /* BANNER */
         .banner {
             background: linear-gradient(135deg, #0d1f3c, #1a2d50);
             border: 1px solid #2a4a7a;
@@ -120,7 +120,7 @@
             font-size: 12px;
         }
 
-        /* ----- CANVAS (GRAPH) ----- */
+        /* CANVAS */
         .canvas-wrap {
             background: #0b101f;
             border-radius: 16px;
@@ -138,7 +138,57 @@
             touch-action: none;
         }
 
-        /* ----- TABS (BET / AUTO) ----- */
+        /* MULTIPLIER */
+        .multiplier-box {
+            text-align: center;
+            margin: 4px 0 8px;
+        }
+        #multiplierDisplay {
+            font-size: 38px;
+            font-weight: 800;
+            color: #fff;
+            transition: 0.2s;
+        }
+        #multiplierDisplay.crashed {
+            color: #ff1744;
+        }
+
+        /* LIVE PLAYERS FEED */
+        .live-feed {
+            background: #0d111f;
+            border-radius: 12px;
+            padding: 6px 10px;
+            margin-bottom: 12px;
+            border: 1px solid #1f2937;
+            max-height: 56px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+        }
+        .live-feed::-webkit-scrollbar {
+            width: 3px;
+        }
+        .live-feed::-webkit-scrollbar-thumb {
+            background: #2a3a5a;
+            border-radius: 10px;
+        }
+        .live-item {
+            font-size: 12px;
+            color: #b0c4de;
+            padding: 2px 0;
+            border-bottom: 1px solid #1a2332;
+            display: flex;
+            justify-content: space-between;
+        }
+        .live-item .highlight {
+            color: #00e676;
+            font-weight: 700;
+        }
+        .live-item .crash {
+            color: #ff1744;
+            font-weight: 700;
+        }
+
+        /* TABS (BET / AUTO) */
         .tabs {
             display: flex;
             gap: 4px;
@@ -165,7 +215,7 @@
             color: #fff;
         }
 
-        /* ----- BET PRESETS ----- */
+        /* PRESET GRID */
         .preset-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
@@ -198,9 +248,9 @@
             color: #004d40;
         }
 
-        /* ----- AUTO SECTION ----- */
+        /* AUTO SECTION */
         .auto-section {
-            display: flex;
+            display: none;
             gap: 12px;
             align-items: center;
             background: #0d111f;
@@ -234,17 +284,12 @@
             height: 18px;
             cursor: pointer;
         }
-        .toggle-label {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
 
-        /* ----- ACTION BUTTONS (BET / CASH) ----- */
+        /* ACTION ROW */
         .action-row {
             display: flex;
             gap: 10px;
-            margin-bottom: 16px;
+            margin-bottom: 12px;
         }
         #betBtn {
             flex: 2;
@@ -280,7 +325,6 @@
             cursor: pointer;
             transition: 0.1s;
             display: none;
-            /* Hidden by default, shows during game */
         }
         #cashBtn:active {
             transform: scale(0.96);
@@ -294,20 +338,31 @@
             display: block;
         }
 
-        /* ----- BOTTOM TABS ----- */
+        .msg {
+            text-align: center;
+            color: #ffab40;
+            font-size: 13px;
+            min-height: 20px;
+            margin-bottom: 8px;
+        }
+
+        /* BOTTOM NAV */
         .bottom-nav {
             display: flex;
             justify-content: space-around;
-            padding-top: 12px;
+            padding-top: 10px;
             border-top: 1px solid #1f2937;
+            margin-bottom: 8px;
         }
         .bottom-nav .nav-item {
             color: #6b7b9c;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
             text-align: center;
             cursor: pointer;
             padding: 4px 0;
+            transition: 0.2s;
+            flex: 1;
         }
         .bottom-nav .nav-item.active {
             color: #00e676;
@@ -317,23 +372,68 @@
             display: block;
         }
 
-        /* ----- FLOATING RIGHT BUTTONS (Cash out / Records) ----- */
+        /* BOTTOM CONTENT (FOLDERS) */
+        .bottom-content {
+            background: #0d111f;
+            border-radius: 16px;
+            padding: 10px 12px;
+            max-height: 140px;
+            overflow-y: auto;
+            margin-top: 4px;
+            border: 1px solid #1a2332;
+            min-height: 60px;
+        }
+        .bottom-content::-webkit-scrollbar {
+            width: 4px;
+        }
+        .bottom-content::-webkit-scrollbar-thumb {
+            background: #2a3a5a;
+            border-radius: 10px;
+        }
+        .content-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            font-size: 12px;
+            color: #b0c4de;
+            border-bottom: 1px solid #1a2332;
+        }
+        .content-item .val {
+            font-weight: 700;
+        }
+        .content-item .green {
+            color: #00e676;
+        }
+        .content-item .red {
+            color: #ff1744;
+        }
+        .content-item .gold {
+            color: #ffd54f;
+        }
+        .empty-msg {
+            color: #4a6fa5;
+            font-size: 13px;
+            text-align: center;
+            padding: 12px 0;
+        }
+
+        /* FLOATING RIGHT BUTTONS */
         .float-right {
             position: absolute;
-            right: 20px;
-            bottom: 80px;
+            right: 16px;
+            bottom: 120px;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
             z-index: 10;
         }
         .float-btn {
             background: #1a2332;
             border: 1px solid #2a3a5a;
-            border-radius: 40px;
-            padding: 6px 14px;
+            border-radius: 30px;
+            padding: 4px 12px;
             color: #b0c4de;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 700;
             cursor: pointer;
             text-align: center;
@@ -345,33 +445,6 @@
             border-color: #00e676;
         }
 
-        /* ----- MULTIPLIER DISPLAY ----- */
-        .multiplier-box {
-            text-align: center;
-            margin: 4px 0 8px;
-        }
-        #multiplierDisplay {
-            font-size: 38px;
-            font-weight: 800;
-            color: #fff;
-            transition: 0.2s;
-        }
-        #multiplierDisplay.crashed {
-            color: #ff1744;
-        }
-
-        .msg {
-            text-align: center;
-            color: #ffab40;
-            font-size: 13px;
-            min-height: 20px;
-            margin-top: 2px;
-        }
-
-        /* responsive */
-        .preset-btn small {
-            display: inline;
-        }
         @media (max-width: 400px) {
             .preset-btn {
                 font-size: 14px;
@@ -379,6 +452,9 @@
             }
             .auto-section input[type="number"] {
                 width: 60px;
+            }
+            .bottom-content {
+                max-height: 100px;
             }
         }
     </style>
@@ -388,17 +464,17 @@
     <div class="app">
         <!-- HEADER -->
         <div class="header">
-            <div class="brand">Uono<span>Aviator</span></div>
+            <div class="brand">Hani<span>Aviator</span></div>
             <div class="balance-box">💰 Balance: <span id="balanceDisplay">100.00</span> PKR</div>
         </div>
 
-        <!-- HISTORY SCROLL -->
+        <!-- HISTORY CHIPS -->
         <div class="history-scroll" id="historyScroll"></div>
 
         <!-- BANNER -->
         <div class="banner">
             <div>
-                <h3>✈️ UONO Aviator</h3>
+                <h3>✈️ HANI Aviator</h3>
                 <p>DAILY 1,000,000 LEADERBOARD PRIZE</p>
             </div>
             <div class="prize">🏆 1M</div>
@@ -414,13 +490,18 @@
             <canvas id="gameCanvas" width="400" height="225"></canvas>
         </div>
 
-        <!-- TABS: BET / AUTO -->
+        <!-- LIVE PLAYERS FEED -->
+        <div class="live-feed" id="liveFeed">
+            <div class="live-item" style="color:#4a6fa5; justify-content:center;">Waiting for players...</div>
+        </div>
+
+        <!-- TABS -->
         <div class="tabs">
             <button class="tab active" id="betTab">Bet</button>
             <button class="tab" id="autoTab">Auto</button>
         </div>
 
-        <!-- PRESET GRID -->
+        <!-- PRESETS -->
         <div class="preset-grid" id="presetGrid">
             <button class="preset-btn active" data-amount="10">10 <small>PKR</small></button>
             <button class="preset-btn" data-amount="100">100 <small>PKR</small></button>
@@ -429,8 +510,8 @@
             <button class="preset-btn" data-amount="1000">1,000 <small>PKR</small></button>
         </div>
 
-        <!-- AUTO SECTION (hidden by default, shown when Auto tab clicked) -->
-        <div class="auto-section" id="autoSection" style="display: none;">
+        <!-- AUTO SECTION -->
+        <div class="auto-section" id="autoSection">
             <label class="toggle-label">
                 <input type="checkbox" id="autoBetToggle"> Auto Bet
             </label>
@@ -448,13 +529,18 @@
 
         <!-- BOTTOM NAV -->
         <div class="bottom-nav">
-            <div class="nav-item active"><span>📊</span> All bets</div>
-            <div class="nav-item"><span>📋</span> My bets</div>
-            <div class="nav-item"><span>🏅</span> Ranks</div>
-            <div class="nav-item"><span>👑</span> Leaderboard</div>
+            <div class="nav-item active" data-view="all"><span>📊</span> All bets</div>
+            <div class="nav-item" data-view="my"><span>📋</span> My bets</div>
+            <div class="nav-item" data-view="ranks"><span>🏅</span> Ranks</div>
+            <div class="nav-item" data-view="leaderboard"><span>👑</span> Leaderboard</div>
         </div>
 
-        <!-- FLOATING RIGHT BUTTONS -->
+        <!-- BOTTOM CONTENT (FOLDERS) -->
+        <div class="bottom-content" id="bottomContent">
+            <div class="empty-msg">Select a tab to view</div>
+        </div>
+
+        <!-- FLOATING BUTTONS -->
         <div class="float-right">
             <div class="float-btn green" id="dailyBtn">🔥 Daily1M</div>
             <div class="float-btn" id="recordsBtn">📁 Records</div>
@@ -478,6 +564,9 @@
             const autoSection = document.getElementById('autoSection');
             const autoBetToggle = document.getElementById('autoBetToggle');
             const autoCashInput = document.getElementById('autoCashInput');
+            const bottomNav = document.querySelectorAll('.nav-item');
+            const bottomContent = document.getElementById('bottomContent');
+            const liveFeed = document.getElementById('liveFeed');
 
             // ---------- STATE ----------
             let balance = 100.00;
@@ -486,11 +575,18 @@
             let isCrashed = false;
             let currentMultiplier = 1.00;
             let crashPoint = 0;
-            let history = []; // [{mult, win}]
+            let history = []; // global crash history {mult, win}
+            let myBetHistory = []; // {type: 'bet'|'cashout'|'crash', amount, mult, win}
             let animId = null;
             let startTime = 0;
             let points = [];
             let selectedAmount = 10;
+            let roundCount = 0;
+
+            // Fake players data
+            const fakeNames = ['Ali_84', 'Khan_Sahab', 'Zara_007', 'Raja_G', 'Jutt_Boy', 'Sara_K', 'Waqas_Pro', 'Nimra_22',
+                'Shah_123', 'Ayesha_99', 'Hassan_45', 'Fatima_77'
+            ];
 
             // ---------- UI UPDATE FUNCS ----------
             function updateBalanceUI() {
@@ -499,8 +595,15 @@
 
             function updateHistoryUI() {
                 historyScroll.innerHTML = '';
-                // Show latest 10
                 const toShow = history.slice(-10);
+                if (toShow.length === 0) {
+                    const div = document.createElement('div');
+                    div.className = 'chip';
+                    div.textContent = 'No history';
+                    div.style.color = '#4a6fa5';
+                    historyScroll.appendChild(div);
+                    return;
+                }
                 for (let item of toShow) {
                     const div = document.createElement('div');
                     div.className = 'chip';
@@ -513,16 +616,43 @@
                     }
                     historyScroll.appendChild(div);
                 }
-                if (history.length === 0) {
-                    const div = document.createElement('div');
-                    div.className = 'chip';
-                    div.textContent = 'No history';
-                    div.style.color = '#4a6fa5';
-                    historyScroll.appendChild(div);
+            }
+
+            // ---------- LIVE FEED ----------
+            function addLiveEvent(name, action, mult, amount) {
+                const item = document.createElement('div');
+                item.className = 'live-item';
+                if (action === 'cashed') {
+                    item.innerHTML =
+                        `<span>${name}</span><span>Bet ${amount} PKR → <span class="highlight">${mult.toFixed(2)}x</span> 💰</span>`;
+                } else {
+                    item.innerHTML =
+                        `<span>${name}</span><span>Bet ${amount} PKR → <span class="crash">💥 ${mult.toFixed(2)}x</span></span>`;
+                }
+                liveFeed.appendChild(item);
+                if (liveFeed.children.length > 15) {
+                    liveFeed.removeChild(liveFeed.firstChild);
+                }
+                liveFeed.scrollTop = liveFeed.scrollHeight;
+            }
+
+            function generateFakeEvent() {
+                if (isPlaying) return; // don't spam during live game
+                const name = fakeNames[Math.floor(Math.random() * fakeNames.length)];
+                const bet = Math.floor(Math.random() * 500) + 10;
+                const mult = (Math.random() * 8 + 1.1);
+                const win = Math.random() > 0.45;
+                if (win) {
+                    addLiveEvent(name, 'cashed', mult, bet);
+                } else {
+                    addLiveEvent(name, 'crashed', mult, bet);
                 }
             }
 
-            // ---------- DRAW GRAPH WITH PLANE & NAME ----------
+            // Fake event every 2.5 seconds
+            setInterval(generateFakeEvent, 2500);
+
+            // ---------- DRAW GRAPH WITH PLANE ----------
             function drawGraph() {
                 const w = 400,
                     h = 225;
@@ -551,20 +681,19 @@
                     ctx.moveTo(0, h);
                     ctx.lineTo(10, h - 10);
                     ctx.stroke();
-                    // Name top-left
                     ctx.font = 'bold 14px Arial';
                     ctx.fillStyle = 'rgba(255,255,255,0.2)';
                     ctx.textAlign = 'left';
                     ctx.textBaseline = 'top';
-                    ctx.fillText('✈️ UONO', 10, 10);
+                    ctx.fillText('✈️ HANI', 10, 10);
                     return;
                 }
 
                 // Path
                 ctx.strokeStyle = isCrashed ? '#ff1744' : '#00e676';
-                ctx.lineWidth = 3;
+                ctx.lineWidth = 3.5;
                 ctx.shadowColor = isCrashed ? '#ff174466' : '#00e67666';
-                ctx.shadowBlur = 12;
+                ctx.shadowBlur = 15;
                 ctx.beginPath();
                 for (let i = 0; i < points.length; i++) {
                     const x = (i / (points.length - 1)) * w;
@@ -575,26 +704,26 @@
                 ctx.stroke();
                 ctx.shadowBlur = 0;
 
-                // Plane ✈️ at the right edge
+                // Draw Plane ✈️ at the right edge
                 if (points.length > 0 && !isCrashed) {
                     const last = points[points.length - 1];
-                    const x = 380;
+                    const x = w - 25;
                     const y = h - (last / 12) * h * 0.85;
-                    ctx.font = '38px Arial';
+                    ctx.font = '42px Arial';
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
                     ctx.shadowColor = '#00e676';
-                    ctx.shadowBlur = 30;
-                    ctx.fillText('✈️', x, Math.min(y, h - 10));
+                    ctx.shadowBlur = 35;
+                    ctx.fillText('✈️', x, Math.min(Math.max(y, 15), h - 15));
                     ctx.shadowBlur = 0;
                 }
 
-                // Name watermark
+                // Watermark
                 ctx.font = 'bold 14px Arial';
-                ctx.fillStyle = 'rgba(255,255,255,0.2)';
+                ctx.fillStyle = 'rgba(255,255,255,0.18)';
                 ctx.textAlign = 'left';
                 ctx.textBaseline = 'top';
-                ctx.fillText('✈️ UONO', 10, 10);
+                ctx.fillText('✈️ HANI', 10, 10);
             }
 
             // ---------- GAME LOGIC ----------
@@ -623,6 +752,7 @@
                 document.querySelectorAll('.preset-btn').forEach(b => b.disabled = false);
                 if (showHistory) drawGraph();
                 msg.textContent = 'Place your bet & fly!';
+                renderBottomView(document.querySelector('.nav-item.active')?.dataset.view || 'all');
             }
 
             function gameLoop(timestamp) {
@@ -642,13 +772,17 @@
                     betBtn.disabled = false;
                     betBtn.textContent = '🚀 Bet';
                     document.querySelectorAll('.preset-btn').forEach(b => b.disabled = false);
-                    msg.textContent = '💥 Crashed at ' + crashPoint.toFixed(2) + 'x! Lost ₹' + currentBet.toFixed(2);
+                    const lost = currentBet;
+                    msg.textContent = '💥 Crashed at ' + crashPoint.toFixed(2) + 'x! Lost ₹' + lost.toFixed(2);
                     history.push({ mult: crashPoint, win: false });
+                    myBetHistory.push({ type: 'crash', amount: lost, mult: crashPoint, win: false });
                     if (history.length > 20) history.shift();
+                    if (myBetHistory.length > 30) myBetHistory.shift();
                     updateHistoryUI();
                     drawGraph();
                     if (animId) { cancelAnimationFrame(animId);
                         animId = null; }
+                    renderBottomView(document.querySelector('.nav-item.active')?.dataset.view || 'all');
                     setTimeout(() => { resetRound(true); }, 2500);
                     return;
                 }
@@ -664,7 +798,6 @@
                     cashBtn.textContent = '💰 Cash ' + winAmount.toFixed(2);
                     cashBtn.classList.add('show');
                     cashBtn.disabled = false;
-                    // Auto cash out check
                     if (autoBetToggle.checked) {
                         const autoTarget = parseFloat(autoCashInput.value);
                         if (mult >= autoTarget) {
@@ -703,6 +836,10 @@
                 startTime = 0;
                 if (animId) cancelAnimationFrame(animId);
                 animId = requestAnimationFrame(gameLoop);
+                // Add to my bets
+                myBetHistory.push({ type: 'bet', amount: betVal, mult: 0, win: null });
+                if (myBetHistory.length > 30) myBetHistory.shift();
+                renderBottomView(document.querySelector('.nav-item.active')?.dataset.view || 'all');
             }
 
             function cashOut() {
@@ -711,7 +848,9 @@
                 balance += winAmount;
                 updateBalanceUI();
                 history.push({ mult: currentMultiplier, win: true });
+                myBetHistory.push({ type: 'cashout', amount: winAmount, mult: currentMultiplier, win: true });
                 if (history.length > 20) history.shift();
+                if (myBetHistory.length > 30) myBetHistory.shift();
                 updateHistoryUI();
                 msg.textContent = '🎉 Cashed out at ' + currentMultiplier.toFixed(2) + 'x! Won ₹' + winAmount.toFixed(2);
                 isPlaying = false;
@@ -723,14 +862,75 @@
                 if (animId) { cancelAnimationFrame(animId);
                     animId = null; }
                 drawGraph();
+                renderBottomView(document.querySelector('.nav-item.active')?.dataset.view || 'all');
                 setTimeout(() => { resetRound(true); }, 2000);
             }
+
+            // ---------- BOTTOM NAVIGATION (FOLDERS) ----------
+            function renderBottomView(view) {
+                let html = '';
+                if (view === 'all') {
+                    const data = history.slice(-10).reverse();
+                    if (data.length === 0) {
+                        html = '<div class="empty-msg">No rounds played yet.</div>';
+                    } else {
+                        data.forEach((item, idx) => {
+                            const cls = item.win ? 'green' : 'red';
+                            const label = item.win ? '✅ CASH' : '💥 CRASH';
+                            html +=
+                                `<div class="content-item"><span>Round #${history.length - idx}</span><span class="val ${cls}">${label} ${item.mult.toFixed(2)}x</span></div>`;
+                        });
+                    }
+                } else if (view === 'my') {
+                    const data = myBetHistory.slice(-10).reverse();
+                    if (data.length === 0) {
+                        html = '<div class="empty-msg">You haven\'t placed any bets yet.</div>';
+                    } else {
+                        data.forEach((item) => {
+                            if (item.type === 'bet') {
+                                html +=
+                                    `<div class="content-item"><span>⬆️ Bet</span><span class="val">-₹${item.amount.toFixed(2)}</span></div>`;
+                            } else if (item.type === 'cashout') {
+                                html +=
+                                    `<div class="content-item"><span>💰 Cash Out (${item.mult.toFixed(2)}x)</span><span class="val green">+₹${item.amount.toFixed(2)}</span></div>`;
+                            } else if (item.type === 'crash') {
+                                html +=
+                                    `<div class="content-item"><span>💥 Crash (${item.mult.toFixed(2)}x)</span><span class="val red">-₹${item.amount.toFixed(2)}</span></div>`;
+                            }
+                        });
+                    }
+                } else if (view === 'ranks') {
+                    html =
+                        `<div class="content-item"><span>🥇 1. Ali_King</span><span class="val gold">12,450 PKR</span></div>
+                               <div class="content-item"><span>🥈 2. Zara_Pro</span><span class="val gold">9,220 PKR</span></div>
+                               <div class="content-item"><span>🥉 3. Waqas_007</span><span class="val gold">7,810 PKR</span></div>
+                               <div class="content-item"><span>4. Hani_Shah</span><span class="val">5,430 PKR</span></div>
+                               <div class="content-item"><span>5. Nimra_22</span><span class="val">3,200 PKR</span></div>`;
+                } else if (view === 'leaderboard') {
+                    html =
+                        `<div class="content-item"><span>👑 1. Raja_G</span><span class="val gold">1,250,000 pts</span></div>
+                               <div class="content-item"><span>👑 2. Khan_Sahab</span><span class="val gold">980,000 pts</span></div>
+                               <div class="content-item"><span>👑 3. Sara_K</span><span class="val gold">750,000 pts</span></div>
+                               <div class="content-item"><span>4. Hani_Aviator</span><span class="val">410,000 pts</span></div>
+                               <div class="content-item"><span>5. Jutt_Boy</span><span class="val">320,000 pts</span></div>`;
+                }
+                bottomContent.innerHTML = html;
+            }
+
+            // Bottom nav click
+            bottomNav.forEach(item => {
+                item.addEventListener('click', function() {
+                    bottomNav.forEach(n => n.classList.remove('active'));
+                    this.classList.add('active');
+                    const view = this.dataset.view;
+                    renderBottomView(view);
+                });
+            });
 
             // ---------- EVENT LISTENERS ----------
             betBtn.addEventListener('click', startBet);
             cashBtn.addEventListener('click', cashOut);
 
-            // Preset buttons
             presetBtns.forEach(btn => {
                 btn.addEventListener('click', function() {
                     if (isPlaying) return;
@@ -740,7 +940,6 @@
                 });
             });
 
-            // Tabs
             betTab.addEventListener('click', function() {
                 this.classList.add('active');
                 autoTab.classList.remove('active');
@@ -752,21 +951,20 @@
                 autoSection.style.display = 'flex';
             });
 
-            // Daily / Records dummy
             document.getElementById('dailyBtn').addEventListener('click', () => {
-                msg.textContent = '🏆 Daily 1M Leaderboard - Coming Soon!';
+                msg.textContent = '🏆 Daily 1M Leaderboard - Live!';
             });
             document.getElementById('recordsBtn').addEventListener('click', () => {
-                msg.textContent = '📁 Your game records will appear here.';
+                msg.textContent = '📁 Your game records synced.';
+                renderBottomView('my');
+                bottomNav.forEach(n => n.classList.remove('active'));
+                document.querySelector('[data-view="my"]').classList.add('active');
             });
 
             // ---------- INIT ----------
             resetRound(false);
             updateBalanceUI();
-            updateHistoryUI();
-            drawGraph();
-
-            // Prefill some dummy history to look like screenshot
+            // Dummy history to look real
             history = [
                 { mult: 3.38, win: true },
                 { mult: 3.59, win: true },
@@ -775,10 +973,19 @@
                 { mult: 2.04, win: true }
             ];
             updateHistoryUI();
+            drawGraph();
+            renderBottomView('all');
 
             // Touch fix
             canvas.addEventListener('touchstart', (e) => e.preventDefault());
+
+            // Add initial fake players to feed
+            setTimeout(() => {
+                addLiveEvent('Ali_84', 'cashed', 2.45, 50);
+                addLiveEvent('Zara_007', 'crashed', 1.12, 200);
+                addLiveEvent('Raja_G', 'cashed', 4.22, 100);
+            }, 500);
         })();
     </script>
 </body>
-</html>                             
+</html>      
