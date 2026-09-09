@@ -186,3 +186,94 @@
     function updateHistoryUI() { historyScroll.innerHTML = ''; const toShow = history.slice(-10); if (!toShow.length) { const d = document.createElement('div'); d.className = 'chip'; d.textContent = 'No history'; d.style.color='#4a6fa5'; historyScroll.appendChild(d); return; } toShow.forEach(item => { const d = document.createElement('div'); d.className = 'chip'; if (item.win) { d.classList.add('green'); d.textContent = '✅ '+item.mult.toFixed(2)+'x'; } else { d.classList.add('red'); d.textContent = '💥 '+item.mult.toFixed(2)+'x'; } historyScroll.appendChild(d); }); }
 
     function drawGraph() { const w = 400, h = 225; ctx.clearRect(0, 0, w, h); ctx.strokeStyle = '#1a2744'; ctx.lineWidth = 0.5; for (let i = 0; i < 10; i++) { const x = (i/10)*w; ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke(); const y = (i/10)*h; ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke(); } if (points.length < 2) { ctx.strokeStyle = '#4a6fa5'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0,h); ctx.lineTo(10,h-10); ctx.stroke(); ctx.font = 'bold 14px Arial'; ctx.fillStyle = 'rgba(255,255,255,0.15)'; ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.fillText('✈️ HANI', 10, 10); return; } ctx.strokeStyle = isCrashed ? '#ff1744' : '#00e676'; ctx.lineWidth = 3.5; ctx.shadowColor = isCrashed ? '#ff174466' : '#00e67666'; ctx.shadowBlur = 20; ctx.beginPath(); for (let i = 0; i < points.length; i++) { const x = (i/(points.length-1))*w; const y = h - (points[i]/12)*h*0.85; if (i === 0) ctx.moveTo(x, Math.min(y,h)); else ctx.lineTo(x, Math.min(y,h)); } ctx.stroke(); ctx.shadowBlur = 0; if (points.length > 0 && !isCrashed) { const last = points[points.length-1]; const x = w - 25; const 
+// ... (Aapki lines 163-189 yahan khatam hoti hain)
+
+// 190: Bet Lagane ka function
+function placeBet() {
+    if (betPlaced || selectedAmount <= 0) return;
+    betPlaced = true;
+    updateBalanceUI(-selectedAmount); // Balance se paise minus karo
+    startRound();
+}
+
+// 191: Round start karna
+function startRound() {
+    roundActive = true;
+    startTime = Date.now();
+    points = [0]; // Graph ke starting point
+    drawGraph(); // Graph reset karo
+    
+    // Fake players generate karo
+    generatePlayers();
+    renderPlayers();
+    
+    // Countdown shuru karo
+    countdown = 10;
+    showTimer(countdown, '');
+    countdownInterval = setInterval(() => {
+        countdown--;
+        showTimer(countdown, '');
+        if (countdown <= 0) {
+            clearInterval(countdownInterval);
+            // Yahan game ka main multiplier shuru hota hai
+            requestAnimationFrame(updateGame); 
+        }
+    }, 1000);
+}
+
+// 192: Main Game Loop (Multiplier badhna aur graph banana)
+function updateGame() {
+    if (!roundActive) return;
+    
+    let elapsed = (Date.now() - startTime) / 1000;
+    // Simple Crash Multiplier formula (1x se start, exponential growth)
+    let multiplier = Math.pow(1.002, elapsed * 60); 
+    
+    points.push(multiplier);
+    drawGraph(); // Graph ka naya point draw karo
+
+    // **SCAM ALERT**: Yahi par randum crash hota hai!
+    let crashPoint = Math.random() * 10; 
+    if (multiplier > crashPoint) {
+        crashAllPlayers(); // Sab fake players "crash" ho jate hain
+        endRound(multiplier);
+    } else {
+        requestAnimationFrame(updateGame);
+    }
+}
+
+// 193: Cashout function (Paisa nikalna)
+function cashOut() {
+    if (!betPlaced || !roundActive) return;
+    let currentMultiplier = parseFloat(points[points.length - 1]);
+    let winnings = selectedAmount * currentMultiplier;
+    updateBalanceUI(winnings); // Profit add karo
+    myBetHistory.push({ amount: selectedAmount, mult: currentMultiplier, win: true });
+    updateHistoryUI();
+    betPlaced = false;
+}
+
+// 194: Round khatam karna
+function endRound(multiplier) {
+    roundActive = false;
+    hideTimer();
+    history.push(multiplier);
+    updateHistoryUI();
+    
+    // Agar aapne bet lagaya tha aur cashout nahi kiya, toh loss
+    if (betPlaced) {
+        myBetHistory.push({ amount: selectedAmount, mult: 0, win: false });
+        updateHistoryUI();
+        betPlaced = false;
+    }
+    
+    // 5 second baad naya round shuru
+    setTimeout(startRound, 5000);
+}
+
+// 195: UI Buttons setup (Start, Cashout, etc.)
+document.getElementById('betButton').addEventListener('click', placeBet);
+document.getElementById('cashOutButton').addEventListener('click', cashOut);
+
+// 196: Initial call
+startRound();
